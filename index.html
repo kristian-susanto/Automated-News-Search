@@ -1,13 +1,14 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pencarian Berita Otomatis</title>
+    <title>Automated News Search</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>"
@@ -43,20 +44,19 @@
         min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: center; /* Akan berubah di media query */
+        align-items: center;
         transition: background 0.3s ease;
         padding: 20px;
       }
 
       .container {
         display: grid;
-        /* Menggunakan 300px agar muat di HP terkecil */
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 24px;
         width: 100%;
         max-width: 1000px;
         position: relative;
-        margin-top: 40px; /* Memberi ruang untuk tombol theme */
+        margin-top: 40px;
       }
 
       .theme-toggle {
@@ -76,7 +76,7 @@
 
       .card {
         background: var(--card-bg);
-        padding: 24px; /* Sedikit lebih kecil agar lega di mobile */
+        padding: 24px;
         border-radius: 16px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         transition:
@@ -98,7 +98,6 @@
         font-size: 14px;
         line-height: 1.5;
       }
-
       label {
         display: block;
         margin-bottom: 6px;
@@ -121,7 +120,6 @@
 
       input:focus {
         border-color: var(--primary);
-        ring: 2px var(--primary);
       }
 
       button {
@@ -133,7 +131,7 @@
         color: white;
         font-weight: 600;
         cursor: pointer;
-        margin-top: auto; /* Membuat tombol selalu di bawah card */
+        margin-top: auto;
         transition: opacity 0.2s;
       }
 
@@ -149,22 +147,21 @@
         line-height: 1.4;
       }
 
-      /* MEDIA QUERIES UNTUK HP */
+      /* Dark mode support for SweetAlert Toast */
+      .dark .swal2-toast {
+        background-color: #1f2937 !important;
+        color: #e5e7eb !important;
+      }
+
       @media (max-width: 600px) {
         body {
-          align-items: flex-start; /* Scroll lebih natural di HP */
+          align-items: flex-start;
           padding: 15px;
         }
         .container {
-          grid-template-columns: 1fr; /* Paksa satu kolom di layar kecil */
+          grid-template-columns: 1fr;
           margin-top: 60px;
           gap: 16px;
-        }
-        .card {
-          padding: 20px;
-        }
-        h1 {
-          font-size: 18px;
         }
         .theme-toggle {
           right: 0;
@@ -177,66 +174,66 @@
       <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
 
       <div class="card">
-        <h1>Berita Terbaru</h1>
+        <h1>Latest News</h1>
         <p>
-          Cari dan buka berita paling baru dari Google News secara otomatis.
+          Search and open the most recent news from Google News automatically.
         </p>
-
         <div class="form-group">
-          <label for="keyword">Kata kunci</label>
+          <label for="keyword">Keyword</label>
           <input
             type="text"
             id="keyword"
-            placeholder="Contoh: Berita teknologi"
+            placeholder="Example: Technology news"
           />
         </div>
-
-        <button onclick="searchNews()">🔍 Buka Berita Terbaru</button>
-        <div class="hint">
-          Hasil akan diurutkan berdasarkan waktu publikasi terkini.
-        </div>
+        <button onclick="searchNews()">🔍 Open Latest News</button>
+        <div class="hint">Results will be sorted by publication time.</div>
       </div>
 
       <div class="card">
-        <h1>Rentang Tanggal</h1>
-        <p>Temukan berita dalam rentang waktu spesifik yang kamu inginkan.</p>
-
+        <h1>Date Range</h1>
+        <p>Find news within a specific time range of your choice.</p>
         <div class="form-group">
-          <label for="keywordRange">Kata kunci</label>
+          <label for="keywordRange">Keyword</label>
           <input
             type="text"
             id="keywordRange"
-            placeholder="Contoh: Ekonomi Indonesia"
+            placeholder="Example: Global Economy"
           />
         </div>
-
         <div class="form-group">
-          <label for="startDate">Tanggal mulai</label>
+          <label for="startDate">Start date</label>
           <input type="date" id="startDate" />
         </div>
-
         <div class="form-group">
-          <label for="endDate">Tanggal akhir</label>
+          <label for="endDate">End date</label>
           <input type="date" id="endDate" />
         </div>
-
-        <button onclick="searchNewsByDate()">
-          📅 Cari Berdasarkan Tanggal
-        </button>
-        <div class="hint">
-          Urutan otomatis dari yang terbaru di dalam rentang tersebut.
-        </div>
+        <button onclick="searchNewsByDate()">📅 Search by Date</button>
+        <div class="hint">Sorted from the newest within the range.</div>
       </div>
     </div>
 
     <script>
       const toggleBtn = document.querySelector(".theme-toggle");
 
-      // Support ENTER key
-      document.addEventListener("keydown", function (e) {
+      // Konfigurasi Toast SweetAlert
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        },
+      });
+
+      document.addEventListener("keydown", (e) => {
         if (e.key !== "Enter") return;
         const active = document.activeElement;
-        if (active && active.id === "keyword") searchNews();
+        if (active?.id === "keyword") searchNews();
         if (["keywordRange", "startDate", "endDate"].includes(active?.id))
           searchNewsByDate();
       });
@@ -255,10 +252,14 @@
 
       function searchNews() {
         const keyword = document.getElementById("keyword").value.trim();
-        if (!keyword) return alert("Masukkan kata kunci terlebih dahulu");
-        const query = encodeURIComponent(keyword);
+        if (!keyword) {
+          return Toast.fire({
+            icon: "warning",
+            title: "Please enter a keyword",
+          });
+        }
         window.open(
-          `https://www.google.com/search?q=${query}&tbm=nws&tbs=sbd:1`,
+          `https://www.google.com/search?q=${encodeURIComponent(keyword)}&tbm=nws&tbs=sbd:1`,
           "_blank",
         );
       }
@@ -268,19 +269,28 @@
         const start = document.getElementById("startDate").value;
         const end = document.getElementById("endDate").value;
 
-        if (!keyword || !start || !end) return alert("Lengkapi semua field");
-        if (start > end)
-          return alert("Tanggal mulai tidak boleh melewati tanggal akhir");
+        if (!keyword || !start || !end) {
+          return Toast.fire({
+            icon: "warning",
+            title: "Please fill in all fields",
+          });
+        }
+
+        if (start > end) {
+          return Toast.fire({
+            icon: "error",
+            title: "Invalid date range",
+          });
+        }
 
         const s = new Date(start);
         const e = new Date(end);
         const sf = `${s.getMonth() + 1}/${s.getDate()}/${s.getFullYear()}`;
         const ef = `${e.getMonth() + 1}/${e.getDate()}/${e.getFullYear()}`;
 
-        const query = encodeURIComponent(keyword);
         const tbs = `cdr:1,cd_min:${sf},cd_max:${ef},sbd:1`;
         window.open(
-          `https://www.google.com/search?q=${query}&tbm=nws&tbs=${tbs}`,
+          `https://www.google.com/search?q=${encodeURIComponent(keyword)}&tbm=nws&tbs=${tbs}`,
           "_blank",
         );
       }
