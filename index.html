@@ -14,6 +14,7 @@
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>"
     />
     <style>
+      /* Style lama tetap dipertahankan */
       * {
         box-sizing: border-box;
       }
@@ -86,7 +87,6 @@
         font-weight: 600;
         color: var(--text-main);
       }
-
       input {
         width: 100%;
         padding: 12px;
@@ -101,6 +101,14 @@
       input:focus {
         border-color: var(--primary);
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+      }
+
+      /* Tambahan Style untuk Grid Input Baru */
+      .input-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 8px;
       }
 
       details {
@@ -118,10 +126,6 @@
         background: rgba(37, 99, 235, 0.05);
         list-style: none;
       }
-      summary::-webkit-details-marker {
-        display: none;
-      }
-
       .date-grid {
         padding: 12px;
         display: grid;
@@ -131,13 +135,11 @@
       .date-grid input {
         margin-bottom: 0;
       }
-
       .button-group {
         display: grid;
         grid-template-columns: 2fr 1fr;
         gap: 12px;
       }
-
       button {
         padding: 14px;
         border-radius: 10px;
@@ -151,7 +153,6 @@
         justify-content: center;
         gap: 8px;
       }
-
       .btn-search {
         background: var(--primary);
         color: white;
@@ -160,7 +161,6 @@
         opacity: 0.9;
         transform: translateY(-1px);
       }
-
       .btn-reset {
         background: transparent;
         color: var(--text-muted);
@@ -171,19 +171,11 @@
         color: var(--danger);
         border-color: var(--danger);
       }
-
-      button:active {
-        transform: translateY(0);
-      }
-
-      /* Bagian yang diubah menjadi teks normal */
       .hint {
         margin-top: 16px;
         font-size: 13px;
         color: var(--text-muted);
         text-align: center;
-        text-transform: none; /* Menghapus Uppercase */
-        letter-spacing: normal; /* Menghapus jarak huruf lebar */
       }
     </style>
   </head>
@@ -191,15 +183,36 @@
     <div class="card">
       <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
       <h1>News Search</h1>
-      <p>Automatically find the latest news based on your keywords.</p>
+      <p>Find global news by country and language filters.</p>
 
       <label for="keyword">Keyword</label>
       <input
         type="text"
         id="keyword"
-        placeholder="e.g., AI Technology"
+        placeholder="e.g., Today's news"
         autofocus
       />
+
+      <div class="input-grid">
+        <div>
+          <label title="Country Code">📍 Geolocation (GL)</label>
+          <input
+            type="text"
+            id="gl"
+            placeholder="e.g., us, es, fr..."
+            maxlength="2"
+          />
+        </div>
+        <div>
+          <label title="Interface Language">🌐 Language (HL)</label>
+          <input
+            type="text"
+            id="hl"
+            placeholder="e.g., en, es, fr..."
+            maxlength="2"
+          />
+        </div>
+      </div>
 
       <details id="dateFilter">
         <summary>📅 Date Range Filter (Optional)</summary>
@@ -231,7 +244,7 @@
         toast: true,
         position: "top",
         showConfirmButton: false,
-        timer: 5000,
+        timer: 3000,
         timerProgressBar: true,
       });
 
@@ -249,19 +262,19 @@
 
       function resetForm() {
         document.getElementById("keyword").value = "";
+        document.getElementById("gl").value = "";
+        document.getElementById("hl").value = "";
         document.getElementById("startDate").value = "";
         document.getElementById("endDate").value = "";
         document.getElementById("dateFilter").removeAttribute("open");
         document.getElementById("keyword").focus();
-
-        Toast.fire({
-          icon: "info",
-          title: "Form cleared",
-        });
+        Toast.fire({ icon: "info", title: "Form cleared" });
       }
 
       function executeSearch() {
         const keyword = document.getElementById("keyword").value.trim();
+        const gl = document.getElementById("gl").value.trim().toLowerCase();
+        const hl = document.getElementById("hl").value.trim().toLowerCase();
         const start = document.getElementById("startDate").value;
         const end = document.getElementById("endDate").value;
 
@@ -273,25 +286,24 @@
         }
 
         let tbs = "sbd:1";
-
         if (start || end) {
           if (start && end && start > end) {
             return Toast.fire({ icon: "error", title: "Invalid date range!" });
           }
-
           const s = start ? new Date(start) : new Date("2000-01-01");
           const e = end ? new Date(end) : new Date();
-
           const sf = `${s.getMonth() + 1}/${s.getDate()}/${s.getFullYear()}`;
           const ef = `${e.getMonth() + 1}/${e.getDate()}/${e.getFullYear()}`;
-
           tbs = `cdr:1,cd_min:${sf},cd_max:${ef},sbd:1`;
         }
 
-        window.open(
-          `https://www.google.com/search?q=${encodeURIComponent(keyword)}&tbm=nws&tbs=${tbs}`,
-          "_blank",
-        );
+        // Membangun URL
+        let finalUrl = `https://www.google.com/search?q=${encodeURIComponent(keyword)}&tbm=nws&tbs=${tbs}`;
+
+        if (gl) finalUrl += `&gl=${gl}`;
+        if (hl) finalUrl += `&hl=${hl}`;
+
+        window.open(finalUrl, "_blank");
       }
 
       document.addEventListener("keydown", (e) => {
